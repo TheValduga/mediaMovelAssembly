@@ -2,6 +2,11 @@
 # Filtro média móvel
 
 .data
+	
+	nMaior:		.ascii "\nDigite o maior N: "
+	
+	nMenor:		.ascii "\nDigite o menor N: "
+	
 	.align 2
 	nEntradas:	.ascii "\nDigite o número de entradas: "
 	
@@ -9,7 +14,7 @@
 	entraXa:	.ascii "\nDigite a entrada "
 	
 	.align 2
-	entraXb:		.ascii ": "
+	entraXb:	.ascii ": "
 	
 	.align 2
 	arrayEntradas:	.float
@@ -23,10 +28,10 @@
 .text
 
 main:	la $s0, arrayEntradas 	# ponteiro para array de entradas
-	move $t2, $s0		# ponteiro auxiliar para entrada
+	move $t2, $s0		# ponteiro auxiliar para entradas
 	
 	la $a0, nEntradas	
-	li $v0, 4		# print mensagem de input de entradas
+	li $v0, 4		# print para input de quantidade de entradas
 	syscall
 	
 	li $v0, 5		# lendo INT de número de entrdas
@@ -62,9 +67,7 @@ loopEntradas:
 
 calculo:
 	
-	#move $f12, $s0
-	#li $v0, 2
-	#syscall
+	
 	
 	
 	
