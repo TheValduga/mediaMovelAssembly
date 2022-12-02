@@ -27,7 +27,8 @@
 	
 .text
 
-main:	la $s0, arrayEntradas 	# ponteiro para array de entradas
+main:
+	la $s0, arrayEntradas 	# ponteiro para array de entradas
 	move $t2, $s0		# ponteiro auxiliar para entradas
 	
 	la $a0, nEntradas	
@@ -67,7 +68,20 @@ loopEntradas:
 
 calculo:
 	
+	la $a0, nMenor
+	li $v0, 4 		# print de entrada do N com menor valor
+	syscall
+	li $v0, 5		# lendo do teclado N com menor valor
+	syscall
+	move $s1, $v0		# $s1 = N menor
+			
+	la $a0, nMaior
+	li $v0, 4 		# print de entrada do N com maior valor
+	syscall
+	li $v0, 5		# lendo do teclado N com maior valor
+	syscall
+	move $s2, $v0		# $s2 = N maior
 	
-	
-	
+	l.s $f12, 0($s0)
+	li $v0, 
 	
