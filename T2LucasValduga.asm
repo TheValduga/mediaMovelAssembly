@@ -3,9 +3,9 @@
 
 .data
 	
-	nMaior:		.ascii "\nDigite o maior N: "
+	nLonga:		.ascii "\nDigite o maior N: "
 	
-	nMenor:		.ascii "\nDigite o menor N: "
+	nCurta:		.ascii "\nDigite o menor N: "
 	
 	.align 2
 	nEntradas:	.ascii "\nDigite o número de entradas: "
@@ -42,7 +42,7 @@ main:
 	li $t1, 0		# Valor para comparar quando ja foram todas as entradas
 	
 loopEntradas:
-	beq $t1, $t0, calculo 	# if $t1 = $t2 finaliza o laço
+	beq $t1, $t0, endEntradas 	# if $t1 = $t2 finaliza o laço
 	
  	addi $t1, $t1, 1	# Soma até chegar ao numero de entradas definido
 	
@@ -66,22 +66,31 @@ loopEntradas:
 	
 	j loopEntradas 		# proxima iteração do laço de entradas
 
-calculo:
+endEntradas:
+	move $t2, $s0		# resetando ponteiro auxiliar para entradas
 	
-	la $a0, nMenor
+	la $a0, nCurta
 	li $v0, 4 		# print de entrada do N com menor valor
 	syscall
 	li $v0, 5		# lendo do teclado N com menor valor
 	syscall
-	move $s1, $v0		# $s1 = N menor
-			
-	la $a0, nMaior
+	mtc1 $v0, $f4		# $f4 = N curta
+					
+	la $a0, nLonga
 	li $v0, 4 		# print de entrada do N com maior valor
 	syscall
 	li $v0, 5		# lendo do teclado N com maior valor
 	syscall
-	move $s2, $v0		# $s2 = N maior
+	mtc1 $v0, $f5		# $f5 = N longa
 	
-	l.s $f12, 0($s0)
-	li $v0, 
+	li $f2, 0
+	li $f3, 0
+
+loopCurta:
+	l.s $f1, 0($t2) 	# carregando float das entradas
+	
+	add.s $f6, $f1, $f2	# soma 
+	add.s $f6, $f6, $f3
+	div.s $f6, $f6, $f4
+		
 	
