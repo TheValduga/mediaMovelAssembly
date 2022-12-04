@@ -2,9 +2,10 @@
 # Filtro média móvel
 
 .data
-	
+	.align 2
 	nLonga:		.ascii "\nDigite o maior N: "
 	
+	.align 2
 	nCurta:		.ascii "\nDigite o menor N: "
 	
 	.align 2
@@ -20,10 +21,10 @@
 	arrayEntradas:	.float
 	
 	.align 2
-	SaidasA:	.float
+	saidasA:	.float
 	
 	.align 2
-	SaidasB:	.float
+	saidasB:	.float
 	
 .text
 
@@ -42,12 +43,12 @@ main:
 	li $t1, 0		# Valor para comparar quando ja foram todas as entradas
 	
 loopEntradas:
-	beq $t1, $t0, endEntradas 	# if $t1 = $t2 finaliza o laço
+	beq $t1, $t0, endEntradas # if $t1 = $t2 finaliza o laço
 	
  	addi $t1, $t1, 1	# Soma até chegar ao numero de entradas definido
 	
 	la $a0, entraXa		
-	li $v0,4		# print para entrada x parte 1
+	li $v0, 4		# print para entrada x parte 1
 	syscall 
 	
 	move $a0, $t1 
@@ -66,31 +67,85 @@ loopEntradas:
 	
 	j loopEntradas 		# proxima iteração do laço de entradas
 
-endEntradas:
-	move $t2, $s0		# resetando ponteiro auxiliar para entradas
-	
+endEntradas:	
 	la $a0, nCurta
 	li $v0, 4 		# print de entrada do N com menor valor
 	syscall
 	li $v0, 5		# lendo do teclado N com menor valor
 	syscall
-	mtc1 $v0, $f4		# $f4 = N curta
-					
+	mtc1 $v0, $f3		# $f3 = N curta em FLOAT para fazer a divisão
+	cvt.s.w $f3, $f3	# convertendo de inteiro para float
+	move $s3, $v0		# $s3 = N curta em INT para comparar o laço
+	li $t3, 0		# contador para o laço de curta
+				
 	la $a0, nLonga
 	li $v0, 4 		# print de entrada do N com maior valor
 	syscall
 	li $v0, 5		# lendo do teclado N com maior valor
 	syscall
-	mtc1 $v0, $f5		# $f5 = N longa
+	mtc1 $v0, $f4		# $f4 = N longa em FLOAT para fazer a divisão
+	cvt.s.w $f4, $f4	# convertendo de inteiro para float
+	move $s4, $v0		# $s4 = N longa em INT para comparar o laço
+	li $t4, 0		# contador para o laço de longa
 	
-	li $f2, 0
-	li $f3, 0
+	move $t2, $s0		# resetando ponteiro auxiliar para entradas
+	li $t1, 0		# resetando variavel de loop de numero de entradas
 
-loopCurta:
-	l.s $f1, 0($t2) 	# carregando float das entradas
+# calculo Curta ------------------------------------------------------------------------- #
+	mtc1 $zero, $f2		# $f2 começa em zero
+	la $t5, saidasA		# carregando endereço do array saidasA
+	move $t6, $s0		# ponteiro auxiliar para entradas
+loopCurta1:
+	l.s $f1, ($t2)		# carrega de arrayEntradas
+	add.s $f2, $f1, $f2	
+	div.s $f5, $f2, $f3		
 	
-	add.s $f6, $f1, $f2	# soma 
-	add.s $f6, $f6, $f3
-	div.s $f6, $f6, $f4
+	s.s $f5, ($t5)		# armazena resultado
+	
+	addi $t5, $t5, 4	# proximo endereço de saidasA 
+	addi $t2, $t2, 4	# proximo endereço de entradas
+	addi $t3, $t3, 1	# soma contador do laço curta
+	addi $t1, $t1, 1	# contador de entradas, para finalizar a media
+	
+	ble $t3, $s3, loopCurta1 # if $t3 <= $s3 jump para loopCurta1
+
+loopCurta2:	
+	l.s $f6, ($t6)		# carregando posição de entrada que saiu do bloco N
+	sub.s $f2, $f2, $f6	# subtraindo do somatorio entrada q saiu do bloco N
+	l.s $f1, ($t2)		
+	add.s $f2, $f1, $f2	
+	div.s $f5, $f2, $f3		
+	
+	s.s $f5, ($t5)		# armazena resultado
+	
+	addi $t5, $t5, 4	# proximo endereço de saidasA 
+	addi $t2, $t2, 4	# proximo endereço de entradas
+	addi $t1, $t1, 1	# contador de entradas, para finalizar a media
+	
+	beq $t1, $t0, loopCurta2
+
+loopTeste:
+	li $s5, 0
+	la $t5, arrayEntradas
+	
+	l.s $f12, ($t5)
+	li $v0, 2
+	syscall
+	
+	addi $t5, $t5, 4
+	addi $s5, $s5, 1
+	
+	ble $s5, $t0, loopTeste
+	
+	
+	
+	
+	
+
+	
+	
+	
+
+	
 		
 	
