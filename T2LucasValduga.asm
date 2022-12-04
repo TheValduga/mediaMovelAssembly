@@ -93,49 +93,59 @@ endEntradas:
 
 # calculo Curta ------------------------------------------------------------------------- #
 	mtc1 $zero, $f2		# $f2 começa em zero
+	cvt.s.w $f2, $f2	# convertendo para single precision
 	la $t5, saidasA		# carregando endereço do array saidasA
 	move $t6, $s0		# ponteiro auxiliar para entradas
 loopCurta1:
-	l.s $f1, ($t2)		# carrega de arrayEntradas
+	l.s $f1, 0($t2)		# carrega de arrayEntradas
 	add.s $f2, $f1, $f2	
 	div.s $f5, $f2, $f3		
 	
-	s.s $f5, ($t5)		# armazena resultado
+	s.s $f5, 0($t5)		# armazena resultado
 	
 	addi $t5, $t5, 4	# proximo endereço de saidasA 
 	addi $t2, $t2, 4	# proximo endereço de entradas
 	addi $t3, $t3, 1	# soma contador do laço curta
 	addi $t1, $t1, 1	# contador de entradas, para finalizar a media
 	
-	ble $t3, $s3, loopCurta1 # if $t3 <= $s3 jump para loopCurta1
+	blt $t3, $s3, loopCurta1 # if $t3 <= $s3 jump para loopCurta1
 
 loopCurta2:	
-	l.s $f6, ($t6)		# carregando posição de entrada que saiu do bloco N
+	beq $t1, $t0, endCurta
+	
+	l.s $f6, 0($t6)		# carregando posição de entrada que saiu do bloco N
 	sub.s $f2, $f2, $f6	# subtraindo do somatorio entrada q saiu do bloco N
-	l.s $f1, ($t2)		
+	l.s $f1, 0($t2)		
 	add.s $f2, $f1, $f2	
 	div.s $f5, $f2, $f3		
 	
-	s.s $f5, ($t5)		# armazena resultado
+	s.s $f5, 0($t5)		# armazena resultado
 	
 	addi $t5, $t5, 4	# proximo endereço de saidasA 
 	addi $t2, $t2, 4	# proximo endereço de entradas
+	addi $t6, $t6, 4	# proxima posição a ser subtraida
 	addi $t1, $t1, 1	# contador de entradas, para finalizar a media
 	
-	beq $t1, $t0, loopCurta2
-
-loopTeste:
-	li $s5, 0
-	la $t5, arrayEntradas
+	j loopCurta2
 	
-	l.s $f12, ($t5)
+endCurta:
+
+	li $t1, 0
+	la $t5, saidasA
+	
+loopTeste:
+	l.s $f12, 0($t5)
 	li $v0, 2
 	syscall
 	
-	addi $t5, $t5, 4
-	addi $s5, $s5, 1
+	la $a0, 10
+	li $v0, 11
+	syscall
 	
-	ble $s5, $t0, loopTeste
+	addi $t5, $t5, 4
+	addi $t1, $t1, 1
+	
+	blt $t1, $t0, loopTeste
 	
 	
 	
