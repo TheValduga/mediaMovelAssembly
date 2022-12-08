@@ -18,6 +18,9 @@
 	entraXb:	.ascii ": "
 	
 	.align 2
+	tableHeader: 	.ascii "Valor MMcurta  MMlonga  Tendência"
+	
+	.align 2
 	arrayEntradas:	.float
 	
 	.align 2
@@ -147,12 +150,32 @@ loopTeste:
 	
 	blt $t1, $t0, loopTeste
 	
+	la $a0, tableHeader 
+	li $v0, 4		# Imprime header da tabela
+	syscall
 	
+	la $t1, arrayEntradas 	# ponteiro para entradas
+	la $t2, saidasA		# ponteiro para MMcurta
+	la $t3, saidasB		# ponteiro para MMlonga
+	li $t4, 0		# valor para contador finalizador do laço tabela
 	
+loopTabela:
+	l.s $f1, 0($t1)		# entradas a ser imprimida
+	l.s $f2, 0($t2)		# valor MMcurta a ser impresso
+	l.s $f3, 0($t3)		# valor MM longa a ser impresso
 	
+	move $f12, $f0
+	li $v0, 6
+	syscall
 	
-
+	move $f12, $f1
+	syscall
 	
+	move $f12, $f2
+	syscall
+	
+	addi $t4, $t4, 1
+	blt $t4, $t0, loopTabela # if $t4 < $t0 vai para loopTabela
 	
 	
 
