@@ -9,7 +9,7 @@
 	nCurta:		.ascii "\nDigite o menor N: "
 	
 	.align 2
-	nEntradas:	.ascii "\nDigite o número de entradas: "
+	nEntradas:	.ascii "\n\nDigite o número de entradas: "
 	
 	.align 2
 	entraXa:	.ascii "\nDigite a entrada "
@@ -18,7 +18,7 @@
 	entraXb:	.ascii ": "
 	
 	.align 2
-	tableHeader: 	.ascii "Valor     	MMcurta     	MMlonga     	Tendência"
+	tableHeader: 	.ascii "\nValor     	MMcurta     	MMlonga     	Tendência"
 	
 	.align 2
 	espaco: 	.asciiz  "     "
@@ -30,7 +30,7 @@
 	queda:		.asciiz "Queda"
 	
 	.align 2
-	constante	.asciiz "Constante"
+	constante:	.asciiz "Constante"
 			
 	.align 2
 	arrayEntradas:	.float	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
@@ -114,8 +114,8 @@ endEntradas:
 	move $t6, $s0		# ponteiro auxiliar para entradas
 loopCurta1:
 	l.s $f1, 0($t2)		# carrega de arrayEntradas
-	add.s $f2, $f1, $f2	
-	div.s $f5, $f2, $f3		
+	add.s $f2, $f1, $f2	# soma proxima entrada
+	div.s $f5, $f2, $f3	# divide por Ncurta para obter a media	
 	
 	s.s $f5, 0($t5)		# armazena resultado
 	
@@ -127,13 +127,13 @@ loopCurta1:
 	blt $t3, $s3, loopCurta1 # if $t3 <= $s3 jump para loopCurta1
 
 loopCurta2:	
-	beq $t1, $t0, endCurta
+	beq $t1, $t0, endCurta 	# finaliza curta quando ja foram calculadas todas entradas
 	
 	l.s $f6, 0($t6)		# carregando posição de entrada que saiu do bloco N
-	sub.s $f2, $f2, $f6	# subtraindo do somatorio entrada q saiu do bloco N
-	l.s $f1, 0($t2)		
-	add.s $f2, $f1, $f2	
-	div.s $f5, $f2, $f3		
+	sub.s $f2, $f2, $f6	# subtraindo do somatorio entrada que saiu do bloco N
+	l.s $f1, 0($t2)		# carregando posição de entrada que entrada no bloco N
+	add.s $f2, $f1, $f2	# somando nova entrada do bloco N
+	div.s $f5, $f2, $f3	# dividindo por Ncurta para obter a media
 	
 	s.s $f5, 0($t5)		# armazena resultado
 	
@@ -142,7 +142,7 @@ loopCurta2:
 	addi $t6, $t6, 4	# proxima posição a ser subtraida
 	addi $t1, $t1, 1	# contador de entradas, para finalizar a media
 	
-	j loopCurta2
+	j loopCurta2	
 	
 endCurta:
 
@@ -158,8 +158,8 @@ endCurta:
 
 loopLonga1:
 	l.s $f1, 0($t2)		# carrega de arrayEntradas
-	add.s $f2, $f1, $f2	
-	div.s $f5, $f2, $f4		
+	add.s $f2, $f1, $f2	# soma valor de nova entrada
+	div.s $f5, $f2, $f4	# divide por Nlonga para obter a média
 	
 	s.s $f5, 0($t5)		# armazena resultado
 	
@@ -175,9 +175,9 @@ loopLonga2:
 	
 	l.s $f6, 0($t6)		# carregando posição de entrada que saiu do bloco N
 	sub.s $f2, $f2, $f6	# subtraindo do somatorio entrada q saiu do bloco N
-	l.s $f1, 0($t2)		
-	add.s $f2, $f1, $f2	
-	div.s $f5, $f2, $f4		
+	l.s $f1, 0($t2)		# carregando posição de entrada que entrada no bloco N
+	add.s $f2, $f1, $f2	# somando nova entrada do bloco N
+	div.s $f5, $f2, $f4	# dividindo por Nlonga para obter a media
 	
 	s.s $f5, 0($t5)		# armazena resultado
 	
@@ -189,25 +189,8 @@ loopLonga2:
 	j loopLonga2
 	
 endLonga:
-	
-#	li $t1, 0
-#	la $t5, saidasB
-	
-	
-#loopTeste:
-#	l.s $f12, 0($t5)
-#	li $v0, 2
-#	syscall
-#	
-#	la $a0, 10
-#	li $v0, 11
-#	syscall
-#	
-#	addi $t5, $t5, 4
-#	addi $t1, $t1, 1
-#	
-#	blt $t1, $t0, loopTeste
-	
+
+# imprimindo resultados --------------------------------------------------- #	
 	la $a0, tableHeader 
 	li $v0, 4		# Imprime header da tabela
 	syscall
@@ -216,6 +199,7 @@ endLonga:
 	la $t2, saidasA		# ponteiro para MMcurta
 	la $t3, saidasB		# ponteiro para MMlonga
 	li $t4, 0		# valor para contador finalizador do laço tabela
+	li $t5, 2		# 0 para ultimo cruzamento de Queda, 1 para Alta, 
 	
 loopTabela:
 	la $a0, 10		# ascii para quebra de linha
@@ -227,7 +211,7 @@ loopTabela:
 	l.s $f3, 0($t3)		# valor MM longa a ser impresso
 	
 	mov.s $f12, $f1
-	li $v0, 2		# imprimi float de entrada
+	li $v0, 2		# imprime float de entrada
 	syscall
 	
 	la $a0, espaco		
@@ -239,7 +223,7 @@ loopTabela:
 	syscall
 	
 	mov.s $f12, $f2
-	li $v0, 2		# imprimi float MMcurta
+	li $v0, 2		# imprime float MMcurta
 	syscall
 	
 	la $a0, espaco		
@@ -251,7 +235,7 @@ loopTabela:
 	syscall
 	
 	mov.s $f12, $f3
-	li $v0, 2		# imprimi float MMlonga
+	li $v0, 2		# imprime float MMlonga
 	syscall
 	
 	la $a0, espaco		
@@ -267,7 +251,44 @@ loopTabela:
 	addi $t3, $t3, 4	# proximo endereço de saidasB
 	addi $t4, $t4, 1	# incrementa contador para finalizar o loopTabela
 	
+	
+	c.eq.s $f2, $f3		# testa igualdade de MMcurta e MMlonga
+	bc1t Constante		# se iguais entao imprime "constante"
+	
+	c.lt.s $f2, $f3		# testa se MMcurta menor que MMlonga
+	bc1f Alta		# se MMcurta > MMlonga vai para Alta
+	
+Queda:	
+	beq $t5, 0, Constante	# vai para constante se ultimo cruzamente de valores foi Queda
+	
+	la $a0, queda
+	li $v0, 4		# imprime Queda
+	syscall
+	
+	li $t5, 0		# $t5 = 0 representa ultimo cruzamento de valores de Queda
+	
+	j branchTabela		# jump para finalizador do loop
+	
+Alta:
+	beq $t5, 1, Constante	# vai para constante se ultimo cruzamento de valores foi Alta
+	
+	la $a0, alta
+	li $v0, 4		# imprime Alta
+	syscall
+
+	li $t5, 1		# $t5 = 1 representa ultimo cruzamento de valores de Alta
+	
+	j branchTabela		# jump para finalizador do loop
+	
+Constante:
+	la $a0, constante 
+	li $v0, 4		# imprime Constante
+	syscall
+
+branchTabela:
 	blt $t4, $t0, loopTabela # if $t4 < $t0 vai para loopTabela
+	
+	j main			# nova execução do programa
 	
 	
 
