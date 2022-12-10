@@ -131,7 +131,7 @@ loopCurta2:
 	
 	l.s $f6, 0($t6)		# carregando posição de entrada que saiu do bloco N
 	sub.s $f2, $f2, $f6	# subtraindo do somatorio entrada que saiu do bloco N
-	l.s $f1, 0($t2)		# carregando posição de entrada que entrada no bloco N
+	l.s $f1, 0($t2)		# carregando posição de entrada que entrara no bloco N
 	add.s $f2, $f1, $f2	# somando nova entrada do bloco N
 	div.s $f5, $f2, $f3	# dividindo por Ncurta para obter a media
 	
@@ -175,7 +175,7 @@ loopLonga2:
 	
 	l.s $f6, 0($t6)		# carregando posição de entrada que saiu do bloco N
 	sub.s $f2, $f2, $f6	# subtraindo do somatorio entrada q saiu do bloco N
-	l.s $f1, 0($t2)		# carregando posição de entrada que entrada no bloco N
+	l.s $f1, 0($t2)		# carregando posição de entrada que entrara no bloco N
 	add.s $f2, $f1, $f2	# somando nova entrada do bloco N
 	div.s $f5, $f2, $f4	# dividindo por Nlonga para obter a media
 	
