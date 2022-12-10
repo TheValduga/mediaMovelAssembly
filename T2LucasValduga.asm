@@ -18,18 +18,31 @@
 	entraXb:	.ascii ": "
 	
 	.align 2
-	tableHeader: 	.ascii "Valor MMcurta  MMlonga  Tendência"
+	tableHeader: 	.ascii "Valor     	MMcurta     	MMlonga     	Tendência"
 	
 	.align 2
-	arrayEntradas:	.float
+	espaco: 	.asciiz  "     "
 	
 	.align 2
-	saidasA:	.float
+	alta:		.asciiz "Alta"
 	
 	.align 2
-	saidasB:	.float
+	queda:		.asciiz "Queda"
+	
+	.align 2
+	constante	.asciiz "Constante"
+			
+	.align 2
+	arrayEntradas:	.float	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+	
+	.align 2
+	saidasA:	.float	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+	
+	.align 2
+	saidasB:	.float	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 	
 .text
+        
 
 main:
 	la $s0, arrayEntradas 	# ponteiro para array de entradas
@@ -133,48 +146,127 @@ loopCurta2:
 	
 endCurta:
 
-	li $t1, 0
-	la $t5, saidasA
+# calculo Longa ------------------------------------------------------------------------------------ #
+
+	move $t2, $s0		# resetando ponteiro auxiliar para entradas
+	li $t1, 0		# resetando variavel de loop de numero de entradas
 	
-loopTeste:
-	l.s $f12, 0($t5)
-	li $v0, 2
-	syscall
+	mtc1 $zero, $f2		# $f2 começa em zero
+	cvt.s.w $f2, $f2	# convertendo para single precision
+	la $t5, saidasB		# carregando endereço do array saidasB
+	move $t6, $s0		# ponteiro auxiliar para entradas
+
+loopLonga1:
+	l.s $f1, 0($t2)		# carrega de arrayEntradas
+	add.s $f2, $f1, $f2	
+	div.s $f5, $f2, $f4		
 	
-	la $a0, 10
-	li $v0, 11
-	syscall
+	s.s $f5, 0($t5)		# armazena resultado
 	
-	addi $t5, $t5, 4
-	addi $t1, $t1, 1
+	addi $t5, $t5, 4	# proximo endereço de saidasB
+	addi $t2, $t2, 4	# proximo endereço de entradas
+	addi $t4, $t4, 1	# soma contador do laço longa
+	addi $t1, $t1, 1	# contador de entradas, para finalizar a media
 	
-	blt $t1, $t0, loopTeste
+	blt $t4, $s4, loopLonga1 # if $t4 <= $s4 jump para loopLonga1
+
+loopLonga2:	
+	beq $t1, $t0, endLonga
+	
+	l.s $f6, 0($t6)		# carregando posição de entrada que saiu do bloco N
+	sub.s $f2, $f2, $f6	# subtraindo do somatorio entrada q saiu do bloco N
+	l.s $f1, 0($t2)		
+	add.s $f2, $f1, $f2	
+	div.s $f5, $f2, $f4		
+	
+	s.s $f5, 0($t5)		# armazena resultado
+	
+	addi $t5, $t5, 4	# proximo endereço de saidasA 
+	addi $t2, $t2, 4	# proximo endereço de entradas
+	addi $t6, $t6, 4	# proxima posição a ser subtraida
+	addi $t1, $t1, 1	# contador de entradas, para finalizar a media
+	
+	j loopLonga2
+	
+endLonga:
+	
+#	li $t1, 0
+#	la $t5, saidasB
+	
+	
+#loopTeste:
+#	l.s $f12, 0($t5)
+#	li $v0, 2
+#	syscall
+#	
+#	la $a0, 10
+#	li $v0, 11
+#	syscall
+#	
+#	addi $t5, $t5, 4
+#	addi $t1, $t1, 1
+#	
+#	blt $t1, $t0, loopTeste
 	
 	la $a0, tableHeader 
 	li $v0, 4		# Imprime header da tabela
 	syscall
-	
+		
 	la $t1, arrayEntradas 	# ponteiro para entradas
 	la $t2, saidasA		# ponteiro para MMcurta
 	la $t3, saidasB		# ponteiro para MMlonga
 	li $t4, 0		# valor para contador finalizador do laço tabela
 	
 loopTabela:
-	l.s $f1, 0($t1)		# entradas a ser imprimida
+	la $a0, 10		# ascii para quebra de linha
+	li $v0, 11		# imprime caractere ascii carregado em $a0 
+	syscall
+	
+	l.s $f1, 0($t1)		# entrada a ser impressa
 	l.s $f2, 0($t2)		# valor MMcurta a ser impresso
 	l.s $f3, 0($t3)		# valor MM longa a ser impresso
 	
-	move $f12, $f0
-	li $v0, 6
+	mov.s $f12, $f1
+	li $v0, 2		# imprimi float de entrada
 	syscall
 	
-	move $f12, $f1
+	la $a0, espaco		
+	li $v0, 4		# string com espaços para alinhamento da tabela
 	syscall
 	
-	move $f12, $f2
+	la $a0, 9		# ascii para caractere tab
+	li $v0, 11		# imprime tab para alinhamento da tabela
 	syscall
 	
-	addi $t4, $t4, 1
+	mov.s $f12, $f2
+	li $v0, 2		# imprimi float MMcurta
+	syscall
+	
+	la $a0, espaco		
+	li $v0, 4		# string com espaços para alinhamento da tabela
+	syscall
+	
+	la $a0, 9		# ascii para caractere tab
+	li $v0, 11		# imprime tab para alinhamento da tabela
+	syscall
+	
+	mov.s $f12, $f3
+	li $v0, 2		# imprimi float MMlonga
+	syscall
+	
+	la $a0, espaco		
+	li $v0, 4		# string com espaços para alinhamento da tabela
+	syscall
+	
+	la $a0, 9		# ascii para caractere tab
+	li $v0, 11		# imprime tab para alinhamento da tabela
+	syscall
+	
+	addi $t1, $t1, 4	# proximo endereço de arrayEntradas
+	addi $t2, $t2, 4	# proximo endereço de saidasA
+	addi $t3, $t3, 4	# proximo endereço de saidasB
+	addi $t4, $t4, 1	# incrementa contador para finalizar o loopTabela
+	
 	blt $t4, $t0, loopTabela # if $t4 < $t0 vai para loopTabela
 	
 	
